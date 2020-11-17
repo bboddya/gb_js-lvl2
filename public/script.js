@@ -1,63 +1,114 @@
-function Cards(id, imgUrl, name, count) {
-    this.id = id;
-    this.imgUrl = imgUrl;
-    this.name = name;
-    this.count = count;
-}
+class List {
+    items = []
 
-var myCard1 = new Cards(1,'img/nature_sm_1.jpg', 'Товар 1', 325);
-var myCard2 = new Cards(2,'img/nature_sm_2.jpg', 'Товар 2', 735);
-var myCard3 = new Cards(3,'img/nature_sm_3.jpg', 'Товар 3', 234);
+    constructor() {
+        let products = this.fetchProduct()
+        products = products.map(cur => {
+            return new Product(cur)
+        })
+        this.items.push(...products)
+        this.render()
+    }
 
-var counter = 0;
+    fetchProduct () {
+        return [
+            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
+            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
+            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
+            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
+            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
+            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
+            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
+            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
+            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
+            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
+        ]
+    }
 
-var mas = [myCard1, myCard2, myCard3];
-
-function init() {
-    var catalog = document.getElementById("div");
-    for (var i = 0; i < mas.length; i++) {
-
-        var item = document.createElement('div');
-        item.classList.add('card');
-    
-        var itemImg = document.createElement('img');
-        itemImg.classList.add('card-img-top');
-        itemImg.src = mas[i].imgUrl;
-        item.appendChild(itemImg);
-        
-        var itemDescr = document.createElement('div');
-        itemDescr.classList.add('card-body');
-        item.appendChild(itemDescr);
-    
-        var itemName = document.createElement('h5');
-        itemName.classList.add('name');
-        itemName.classList.add('card-title');
-        itemName.appendChild(document.createTextNode(mas[i].name));
-        itemDescr.appendChild(itemName);
-    
-        var itemCount = document.createElement('p');
-        itemCount.classList.add('count');
-        itemCount.classList.add('card-text');
-        itemCount.appendChild(document.createTextNode(mas[i].count + "\u20bd"));
-        itemDescr.appendChild(itemCount);
-    
-        var itemBtn = document.createElement('a');
-        itemBtn.classList.add('btn-primary');
-        itemBtn.classList.add('btn');
-        itemBtn.setAttribute('href', '#');
-        itemBtn.appendChild(document.createTextNode('Добавить в корзину'));
-        itemBtn.addEventListener('click', addToCart);
-        itemDescr.appendChild(itemBtn);
-        
-        catalog.appendChild(item);
+    render() {
+        this.items.forEach(product => {
+            product.render()
+        })
     }
 }
 
-var sum_count = document.querySelector('.sum_count');
-    
-function addToCart(obj) {
-    
-};
+class Product {
+    imgUrl = null;
+    name = '';
+    count = 0;
 
+    constructor({name, imgUrl, count}) {
+        this.imgUrl = imgUrl;
+        this.name = name;
+        this.count = count;
+    }
 
-window.onload = init;
+    addToCart() {
+        const cartList = document.querySelector(".cart__list");
+        const sumCount = document.querySelector(".sum-count");
+        let sum = 0, price;
+        if (cartList) {
+            let item = document.createElement('div');
+            item.classList.add('sm-card');
+            item.innerHTML = `Товар: ${this.name} = ${this.count}`;
+
+            price = this.count
+            sum += price;
+
+            console.log(sum)
+            console.log(price)
+            console.log(this.count)
+            cartList.appendChild(item);
+            sumCount.textContent = `Стоимость покупки:${sum}`;
+        }
+    }
+
+    render() {
+        const catalog = document.getElementById("div");
+        if (catalog) {
+            let item = document.createElement('div');
+            item.classList.add('card');
+        
+            let itemImg = document.createElement('img');
+            itemImg.classList.add('card-img-top');
+            itemImg.src = this.imgUrl;
+            item.appendChild(itemImg);
+            
+            let itemDescr = document.createElement('div');
+            itemDescr.classList.add('card-body');
+            item.appendChild(itemDescr);
+        
+            let itemName = document.createElement('h5');
+            itemName.classList.add('name');
+            itemName.classList.add('card-title');
+            itemName.appendChild(document.createTextNode(this.name));
+            itemDescr.appendChild(itemName);
+        
+            let itemCount = document.createElement('p');
+            itemCount.classList.add('count');
+            itemCount.classList.add('card-text');
+            itemCount.appendChild(document.createTextNode(this.count + "\u20bd"));
+            itemDescr.appendChild(itemCount);
+        
+            let itemBtn = document.createElement('a');
+            itemBtn.classList.add('btn-primary');
+            itemBtn.classList.add('btn');
+            itemBtn.setAttribute('href', '#');
+            itemBtn.appendChild(document.createTextNode('Добавить в корзину'));
+            itemBtn.addEventListener('click', () => {
+                this.addToCart()
+            });
+            itemDescr.appendChild(itemBtn);
+            
+            catalog.appendChild(item);
+        }
+    }
+}
+/* 
+class Cart extends List {
+    constructor() {
+        super()
+    }
+} */
+
+const ListInstance = new List()
