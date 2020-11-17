@@ -104,11 +104,6 @@ class Product {
         }
     }
 }
-/* 
-class Cart extends List {
-    constructor() {
-        super()
-    }
-} */
+
 
 const ListInstance = new List()
