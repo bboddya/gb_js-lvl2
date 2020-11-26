@@ -1,28 +1,17 @@
 class List {
     items = []
 
-    constructor() {
-        let products = this.fetchProduct()
-        products = products.map(cur => {
-            return new Product(cur)
-        })
-        this.items.push(...products)
+    constructor(item = []) {
+        this.item = []
+    }
+
+    add(item) {
+        this.items.push(item)
         this.render()
     }
 
-    fetchProduct () {
-        return [
-            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
-            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
-            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
-            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
-            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
-            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
-            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
-            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
-            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
-            {name: 'Salamander', imgUrl: 'img/salamander.jpg', count: 3456},
-        ]
+    remove() {
+        //todo
     }
 
     render() {
@@ -32,83 +21,128 @@ class List {
     }
 }
 
-class Product {
-    imgUrl = null;
-    name = '';
-    count = 0;
+class ProductList extends List {
+    _cartInstance = null
+    
+    constructor(CartInstance) {
+        super()
+        this._cartInstance = CartInstance
 
-    constructor({name, imgUrl, count}) {
-        this.imgUrl = imgUrl;
-        this.name = name;
-        this.count = count;
+        let products = this.fetchProduct()
+        products.then(() => {
+            this.render()
+        })
     }
 
-    addToCart() {
-        const cartList = document.querySelector(".cart__list");
-        const sumCount = document.querySelector(".sum-count");
-        let sum = 0, price;
-        if (cartList) {
-            let item = document.createElement('div');
-            item.classList.add('sm-card');
-            item.innerHTML = `Товар: ${this.name} = ${this.count}`;
+    fetchProduct () {
+       const result = fetch('http://localhost:3000/database/page1.json')
+       return result 
+        .then(res => {
+            return res.json()
+        })
+        .then(data => {
+            this.items = data.data.map(cur => {
+                return new Product(cur, this._cartInstance)
+            })
+        })
+        .catch(e => {
+            console.log(e)
+        })
+    }
 
-            price = this.count
-            sum += price;
+    render() {
+        const placeToRender = document.querySelector(".card_list");
+        if (placeToRender) {
+            placeToRender.innerHTML = ''
+            this.items.forEach(product => {
+                product.render(placeToRender)
+            })
+        }
+    }
+}
 
-            console.log(sum)
-            console.log(price)
-            console.log(this.count)
-            cartList.appendChild(item);
-            sumCount.textContent = `Стоимость покупки:${sum}`;
+class Cart extends List {
+    constructor() {
+        super()
+        this.init()
+    }
+    
+    init() {
+        const block = document.createElement('div')
+        block.classList.add('cart')
+
+        const list = document.createElement('div')
+        list.classList.add('cart_list')
+        block.appendChild(list)
+
+        const ButtonInstnce = new Button('Корзина', () => {
+            list.classList.toggle('show')       
+        })
+        block.appendChild(ButtonInstnce.getTemplate())
+        
+        const placeToRender = document.querySelector('.cart_list')
+        if (placeToRender) {
+            placeToRender.appendChild(block)
         }
     }
 
     render() {
-        const catalog = document.getElementById("div");
-        if (catalog) {
-            let item = document.createElement('div');
-            item.classList.add('card');
-        
-            let itemImg = document.createElement('img');
-            itemImg.classList.add('card-img-top');
-            itemImg.src = this.imgUrl;
-            item.appendChild(itemImg);
-            
-            let itemDescr = document.createElement('div');
-            itemDescr.classList.add('card-body');
-            item.appendChild(itemDescr);
-        
-            let itemName = document.createElement('h5');
-            itemName.classList.add('name');
-            itemName.classList.add('card-title');
-            itemName.appendChild(document.createTextNode(this.name));
-            itemDescr.appendChild(itemName);
-        
-            let itemCount = document.createElement('p');
-            itemCount.classList.add('count');
-            itemCount.classList.add('card-text');
-            itemCount.appendChild(document.createTextNode(this.count + "\u20bd"));
-            itemDescr.appendChild(itemCount);
-        
-            let itemBtn = document.createElement('a');
-            itemBtn.classList.add('btn-primary');
-            itemBtn.classList.add('btn');
-            itemBtn.setAttribute('href', '#');
-            itemBtn.appendChild(document.createTextNode('Добавить в корзину'));
-            itemBtn.addEventListener('click', () => {
-                this.addToCart()
-            });
-            itemDescr.appendChild(itemBtn);
-            
-            catalog.appendChild(item);
+        const placeToRender = document.querySelector('.cart_list')
+        if (placeToRender) {
+            placeToRender.innerHTML = ''
+            this.items.forEach(product => {
+                product.render(placeToRender)
+            }) 
         }
     }
 }
-/* 
-class Cart extends List {
-    constructor() {
-        super()
-    }
-} */
+class Product {
+    imgUrl = null;
+    name = '';
+    count = 0;
+    _cartInstance = null;
 
-const ListInstance = new List()
+    constructor({name, imgUrl, count}, CartInstance) {
+        this.imgUrl = imgUrl;
+        this.name = name;
+        this.count = count;
+        this._cartInstance = CartInstance
+    }
+
+    render(placeToRender) {
+        if (placeToRender) {
+            const block = document.createElement('div');
+            block.classList.add('card');
+            block.innerHTML = `
+            <img src="${this.imgUrl}" class="card-img">
+            <div class="card-body">
+            <h5 class="name card-title">${this.name}</h5>
+            <span class="count card-text">${this.count} \u20bd</span>
+            </div>
+            `
+            const AddButton = new Button('Добавить в корзину', () => {
+                this._cartInstance.add(new ProductCart(this))
+            });
+            block.appendChild(AddButton.getTemplate());
+            
+            placeToRender.appendChild(block);
+        }
+    }
+}
+
+class ProductCart extends Product {
+    constructor(props) {
+        super(props)
+    }
+    
+    render(placeToRender) {
+        if (placeToRender) {
+            const block = document.createElement('div')
+            block.innerHTML = `${this.name} = ${this.count}`
+            placeToRender.appendChild(block)
+        }
+    }
+}
+
+const CartInstance = new Cart()
+const ListInstance = new ProductList(CartInstance)
